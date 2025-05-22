@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Estudio de Imagenología</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            margin: 0;
+            padding-top: 20px;
+            padding-right: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        label {
+            font-weight: bold;
+            align-self: flex-start;
+            margin-top: 10px;
+        }
+        input, select, textarea {
+            width: 90%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        button {
+            width: 90%;
+            padding: 10px;
+            background-color: #a6a6ed;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        button:hover {
+            background-color: #8585d6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Registro de Estudio de Imagenología</h1>
+        <form id="imagingStudyForm">
+            <label for="identifierSystem">Sistema de Identificación:</label>
+            <input type="text" id="identifierSystem" value="urn:dicom:uid" required>
+
+            <label for="identifierValue">UID del Estudio:</label>
+            <input type="text" id="identifierValue" placeholder="urn:oid:2.16.124.113543.6003.1154777499.30246.19789.3503430045" required>
+
+            <label for="status">Estado del Estudio:</label>
+            <select id="status" required>
+                <option value="registered">Registrado</option>
+                <option value="available" selected>Disponible</option>
+                <option value="cancelled">Cancelado</option>
+                <option value="entered-in-error">Ingresado por error</option>
+            </select>
+
+            <label for="modalitySystem">Sistema de Modalidad:</label>
+            <input type="text" id="modalitySystem" value="http://dicom.nema.org/resources/ontology/DCM" required>
+
+            <label for="modalityCode">Modalidad:</label>
+            <select id="modalityCode" required>
+                <option value="CT">Tomografía Computarizada (CT)</option>
+                <option value="MR">Resonancia Magnética (MR)</option>
+                <option value="US">Ultrasonido (US)</option>
+                <option value="XR">Radiografía (XR)</option>
+                <option value="MG">Mamografía (MG)</option>
+            </select>
+
+            <label for="subjectReference">Paciente (Referencia):</label>
+            <input type="text" id="subjectReference" placeholder="Patient/123" required>
+
+            <label for="startedDateTime">Fecha/Hora del Estudio:</label>
+            <input type="datetime-local" id="startedDateTime" required>
+
+            <label for="seriesUid">UID de la Serie:</label>
+            <input type="text" id="seriesUid" placeholder="2.16.124.113543.6003.1154777499.30246.19789.3503430045.1" required>
+
+            <label for="instanceUid">UID de la Instancia:</label>
+            <input type="text" id="instanceUid" placeholder="2.16.124.113543.6003.1154777499.30246.19789.3503430045.1.1" required>
+
+            <label for="sopClassSystem">Sistema SOP Class:</label>
+            <input type="text" id="sopClassSystem" value="urn:ietf:rfc:3986" required>
+
+            <label for="sopClassCode">Código SOP Class:</label>
+            <input type="text" id="sopClassCode" placeholder="urn:oid:1.2.840.10008.5.1.4.1.1.2" required>
+
+            <button type="submit">Registrar Estudio</button>
+        </form>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
