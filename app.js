@@ -8,8 +8,11 @@ document.getElementById('imagingStudyForm').addEventListener('submit', function(
     const modality = document.getElementById('modality').value;
     const subjectReference = document.getElementById('subjectReference').value;
     const studyDate = document.getElementById('studyDate').value;
+    const seriesUid = document.getElementById('seriesUid').value;
+    const instanceUid = document.getElementById('instanceUid').value;
+    const sopClassCode = document.getElementById('sopClassCode').value;
 
-    // Create ImagingStudy object (date only, no time)
+    // Create ImagingStudy object with series and instance
     const imagingStudy = {
         resourceType: "ImagingStudy",
         identifier: [{
@@ -26,7 +29,23 @@ document.getElementById('imagingStudyForm').addEventListener('submit', function(
         subject: {
             reference: subjectReference
         },
-        started: studyDate // Just the date without time
+        started: studyDate, // Just the date without time
+        series: [{
+            uid: seriesUid,
+            modality: {
+                coding: [{
+                    system: "http://dicom.nema.org/resources/ontology/DCM",
+                    code: modality
+                }]
+            },
+            instance: [{
+                uid: instanceUid,
+                sopClass: {
+                    system: "urn:ietf:rfc:3986",
+                    code: sopClassCode
+                }
+            }]
+        }]
     };
 
     // Send to server

@@ -19,11 +19,23 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 400px;
+            max-width: 500px;
         }
         h1 {
             text-align: center;
             color: #333;
+            margin-bottom: 20px;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #444;
         }
         label {
             display: block;
@@ -40,16 +52,17 @@
         }
         button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin-top: 20px;
-            background-color: #a6a6ed;
+            background-color: #4a6baf;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
         }
         button:hover {
-            background-color: #8585d6;
+            background-color: #3a5a9f;
         }
     </style>
 </head>
@@ -57,31 +70,50 @@
     <div class="container">
         <h1>Registro de Estudio de Imagenología</h1>
         <form id="imagingStudyForm">
-            <label for="identifierSystem">Sistema de Identificación:</label>
-            <input type="text" id="identifierSystem" value="urn:dicom:uid" required>
+            <div class="section">
+                <div class="section-title">Información Básica</div>
+                <label for="identifierSystem">Sistema de Identificación:</label>
+                <input type="text" id="identifierSystem" value="urn:dicom:uid" required>
 
-            <label for="identifierValue">UID del Estudio:</label>
-            <input type="text" id="identifierValue" placeholder="urn:oid:2.16.124.113543.6003.1154777499.30246.19789.3503430045" required>
+                <label for="identifierValue">UID del Estudio:</label>
+                <input type="text" id="identifierValue" placeholder="urn:oid:2.16.124.113543.6003.1154777499.30246.19789.3503430045" required>
 
-            <label for="status">Estado del Estudio:</label>
-            <select id="status" required>
-                <option value="available" selected>Disponible</option>
-                <option value="registered">Registrado</option>
-                <option value="cancelled">Cancelado</option>
-            </select>
+                <label for="status">Estado del Estudio:</label>
+                <select id="status" required>
+                    <option value="available" selected>Disponible</option>
+                    <option value="registered">Registrado</option>
+                    <option value="cancelled">Cancelado</option>
+                </select>
 
-            <label for="modality">Modalidad:</label>
-            <select id="modality" required>
-                <option value="CT">Tomografía Computarizada (CT)</option>
-                <option value="MR">Resonancia Magnética (MR)</option>
-                <option value="US">Ultrasonido (US)</option>
-            </select>
+                <label for="subjectReference">Paciente (Referencia):</label>
+                <input type="text" id="subjectReference" placeholder="Patient/123" required>
 
-            <label for="subjectReference">Paciente (Referencia):</label>
-            <input type="text" id="subjectReference" placeholder="Patient/123" required>
+                <label for="studyDate">Fecha del Estudio:</label>
+                <input type="date" id="studyDate" required>
+            </div>
 
-            <label for="studyDate">Fecha del Estudio:</label>
-            <input type="date" id="studyDate" required>
+            <div class="section">
+                <div class="section-title">Modalidad Principal</div>
+                <label for="modality">Modalidad:</label>
+                <select id="modality" required>
+                    <option value="CT">Tomografía Computarizada (CT)</option>
+                    <option value="MR">Resonancia Magnética (MR)</option>
+                    <option value="US">Ultrasonido (US)</option>
+                    <option value="XR">Radiografía (XR)</option>
+                </select>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Información de Series</div>
+                <label for="seriesUid">UID de la Serie:</label>
+                <input type="text" id="seriesUid" placeholder="2.16.124.113543.6003.1154777499.30246.19789.3503430045.1" required>
+
+                <label for="instanceUid">UID de la Instancia:</label>
+                <input type="text" id="instanceUid" placeholder="2.16.124.113543.6003.1154777499.30246.19789.3503430045.1.1" required>
+
+                <label for="sopClassCode">Código SOP Class:</label>
+                <input type="text" id="sopClassCode" value="urn:oid:1.2.840.10008.5.1.4.1.1.2" required>
+            </div>
 
             <button type="submit">Registrar Estudio</button>
         </form>
