@@ -1,4 +1,3 @@
-// app.js
 document.getElementById('imagingStudyForm').addEventListener('submit', function(event) {
     event.preventDefault();
 
@@ -6,50 +5,28 @@ document.getElementById('imagingStudyForm').addEventListener('submit', function(
     const identifierSystem = document.getElementById('identifierSystem').value;
     const identifierValue = document.getElementById('identifierValue').value;
     const status = document.getElementById('status').value;
-    const modalitySystem = document.getElementById('modalitySystem').value;
-    const modalityCode = document.getElementById('modalityCode').value;
+    const modality = document.getElementById('modality').value;
     const subjectReference = document.getElementById('subjectReference').value;
-    const startedDateTime = document.getElementById('startedDateTime').value;
-    const seriesUid = document.getElementById('seriesUid').value;
-    const instanceUid = document.getElementById('instanceUid').value;
-    const sopClassSystem = document.getElementById('sopClassSystem').value;
-    const sopClassCode = document.getElementById('sopClassCode').value;
+    const studyDate = document.getElementById('studyDate').value;
 
-    // Create ImagingStudy object following the FHIR structure
+    // Create ImagingStudy object (date only, no time)
     const imagingStudy = {
-        "resourceType": "ImagingStudy",
-        "id": "example-radiology",
-        "identifier": [{
-            "system": identifierSystem || "urn:dicom:uid",
-            "value": identifierValue || "urn:oid:2.16.124.113543.6003.1154777499.30246.19789.3503430045"
+        resourceType: "ImagingStudy",
+        identifier: [{
+            system: identifierSystem,
+            value: identifierValue
         }],
-        "status": status || "available",
-        "modality": [{
-            "coding": [{
-                "system": modalitySystem || "http://dicom.nema.org/resources/ontology/DCM",
-                "code": modalityCode || "CT"
+        status: status,
+        modality: [{
+            coding: [{
+                system: "http://dicom.nema.org/resources/ontology/DCM",
+                code: modality
             }]
         }],
-        "subject": {
-            "reference": subjectReference || "Patient/example"
+        subject: {
+            reference: subjectReference
         },
-        "started": startedDateTime || "2021-01-01T09:00:00Z",
-        "series": [{
-            "uid": seriesUid || "2.16.124.113543.6003.1154777499.30246.19789.3503430045.1",
-            "modality": {
-                "coding": [{
-                    "system": modalitySystem || "http://dicom.nema.org/resources/ontology/DCM",
-                    "code": modalityCode || "CT"
-                }]
-            },
-            "instance": [{
-                "uid": instanceUid || "2.16.124.113543.6003.1154777499.30246.19789.3503430045.1.1",
-                "sopClass": {
-                    "system": sopClassSystem || "urn:ietf:rfc:3986",
-                    "code": sopClassCode || "urn:oid:1.2.840.10008.5.1.4.1.1.2"
-                }
-            }]
-        }]
+        started: studyDate // Just the date without time
     };
 
     // Send to server
@@ -65,10 +42,10 @@ document.getElementById('imagingStudyForm').addEventListener('submit', function(
     .then(response => response.json())
     .then(data => {
         console.log('Success:', data);
-        alert('Imaging study registered successfully!');
+        alert('Estudio de imagen registrado exitosamente!');
     })
     .catch((error) => {
         console.error('Error:', error);
-        alert('Error registering imaging study.');
+        alert('Error al registrar el estudio de imagen.');
     });
 });
