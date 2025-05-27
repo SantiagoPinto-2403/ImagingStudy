@@ -4,110 +4,201 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Estudio de Imagenología</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            padding-top: 20px;
-            padding-right: 20px;
-        }
-        .container {
-            background: white;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        h1 {
-            text-align: center;
             color: #333;
         }
-        form {
+        
+        .contenedor {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            max-width: 500px;
+            margin-top: 20px;
         }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+        
+        .grupo-formulario {
+            margin-bottom: 20px;
+        }
+        
         label {
-            font-weight: bold;
-            align-self: flex-start;
-            margin-top: 10px;
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #2c3e50;
         }
+        
+        .campo-requerido::after {
+            content: " *";
+            color: #e74c3c;
+        }
+        
         input, select {
-            width: 90%;
-            padding: 8px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
         }
+        
+        input:focus, select:focus {
+            outline: 2px solid #7c34db;
+            outline-offset: 2px;
+            border-color: #7c34db;
+        }
+        
         button {
-            width: 90%;
-            padding: 10px;
-            background-color: #a6a6ed;
+            width: 100%;
+            padding: 12px;
+            background-color: #7c34db;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
             cursor: pointer;
-            margin-top: 15px;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
+        
         button:hover {
-            background-color: #8585d6;
+            background-color: #7c34db;
+        }
+        
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .region-live {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        
+        @media (max-width: 600px) {
+            .contenedor {
+                padding: 20px;
+            }
+            
+            input, select, button {
+                padding: 8px 10px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Registro de Estudio de Imagenología</h1>
-        <form id="imagingStudyForm">
-            <label for="identifierSystem">Sistema de Identificación:</label>
-            <input type="text" id="identifierSystem" value="urn:dicom:uid" required>
-
-            <label for="identifierValue">UID del Estudio:</label>
-            <input type="text" id="identifierValue" placeholder="urn:oid:2.16.124.113543.6003.1154777499.30246.19789.3503430045" required>
-
-            <label for="status">Estado del Estudio:</label>
-            <select id="status" required>
-                <option value="available" selected>Disponible</option>
-                <option value="registered">Registrado</option>
-                <option value="cancelled">Cancelado</option>
-            </select>
-
-            <label for="subjectReference">Paciente (Referencia):</label>
-            <input type="text" id="subjectReference" placeholder="Patient/123" required>
-
-            <label for="studyDate">Fecha del Estudio:</label>
-            <input type="date" id="studyDate" required>
-
-            <label for="modality">Modalidad:</label>
-            <select id="modality" required>
-                <option value="CT">Tomografía Computarizada (CT)</option>
-                <option value="MR">Resonancia Magnética (MR)</option>
-                <option value="US">Ultrasonido (US)</option>
-                <option value="XR">Radiografía (XR)</option>
-            </select>
-
-            <label for="seriesUid">UID de la Serie:</label>
-            <input type="text" id="seriesUid" placeholder="2.16.124.113543.6003.1154777499.30246.19789.3503430045.1" required>
-
-            <label for="instanceUid">UID de la Instancia:</label>
-            <input type="text" id="instanceUid" placeholder="2.16.124.113543.6003.1154777499.30246.19789.3503430045.1.1" required>
-
-            <label for="sopClassCode">Código SOP Class:</label>
-            <input type="text" id="sopClassCode" value="urn:oid:1.2.840.10008.5.1.4.1.1.2" required>
-
-            <button type="submit">Registrar Estudio</button>
+    <div class="contenedor">
+        <h1 id="form-title">Registro de Estudio de Imagenología</h1>
+        <form id="imagingStudyForm" aria-labelledby="form-title">
+            <div class="region-live" aria-live="polite"></div>
+            
+            <div class="grupo-formulario">
+                <label for="identifierSystem" class="campo-requerido">Sistema de Identificación</label>
+                <input type="text" id="identifierSystem" value="urn:dicom:uid" required aria-required="true">
+            </div>
+            
+            <div class="grupo-formulario">
+                <label for="identifierValue" class="campo-requerido">UID del Estudio</label>
+                <input type="text" id="identifierValue" placeholder="urn:oid:2.16.124.113543.6003.1154777499.30246.19789.3503430045" required aria-required="true">
+            </div>
+            
+            <div class="grupo-formulario">
+                <label for="status" class="campo-requerido">Estado del Estudio</label>
+                <select id="status" required aria-required="true">
+                    <option value="">Seleccione un estado</option>
+                    <option value="available" selected>Disponible</option>
+                    <option value="registered">Registrado</option>
+                    <option value="cancelled">Cancelado</option>
+                </select>
+            </div>
+            
+            <div class="grupo-formulario">
+                <label for="subjectReference" class="campo-requerido">Paciente (Referencia)</label>
+                <input type="text" id="subjectReference" placeholder="Patient/123" required aria-required="true">
+            </div>
+            
+            <div class="grupo-formulario">
+                <label for="studyDate" class="campo-requerido">Fecha del Estudio</label>
+                <input type="date" id="studyDate" required aria-required="true">
+            </div>
+            
+            <div class="grupo-formulario">
+                <label for="modality" class="campo-requerido">Modalidad</label>
+                <select id="modality" required aria-required="true">
+                    <option value="">Seleccione una modalidad</option>
+                    <option value="CT">Tomografía Computarizada (CT)</option>
+                    <option value="MR">Resonancia Magnética (MR)</option>
+                    <option value="US">Ultrasonido (US)</option>
+                    <option value="XR">Radiografía (XR)</option>
+                </select>
+            </div>
+            
+            <div class="grupo-formulario">
+                <label for="seriesUid" class="campo-requerido">UID de la Serie</label>
+                <input type="text" id="seriesUid" placeholder="2.16.124.113543.6003.1154777499.30246.19789.3503430045.1" required aria-required="true">
+            </div>
+            
+            <div class="grupo-formulario">
+                <label for="instanceUid" class="campo-requerido">UID de la Instancia</label>
+                <input type="text" id="instanceUid" placeholder="2.16.124.113543.6003.1154777499.30246.19789.3503430045.1.1" required aria-required="true">
+            </div>
+            
+            <div class="grupo-formulario">
+                <label for="sopClassCode" class="campo-requerido">Código SOP Class</label>
+                <input type="text" id="sopClassCode" value="urn:oid:1.2.840.10008.5.1.4.1.1.2" required aria-required="true">
+            </div>
+            
+            <button type="submit" aria-label="Enviar formulario de estudio de imagenología">
+                <span class="texto-boton">Registrar Estudio</span>
+            </button>
         </form>
     </div>
+    
     <script src="app.js"></script>
 </body>
 </html>
