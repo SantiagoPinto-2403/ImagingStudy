@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error('Please enter the study date and time');
             }
             
-            // Build properly formatted ImagingStudy object
+            // Build properly formatted ImagingStudy object - SIMPLIFIED VERSION
             const imagingStudyData = {
                 resourceType: "ImagingStudy",
                 status: "available",
@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     reference: `Appointment/${apptId}`
                 }],
                 modality: [{
-                    system: "http://dicom.nema.org/resources/ontology/DCM",
+                    // Simplified modality structure
                     code: modalityCode
                 }],
                 started: `${started}:00Z`,  // Add seconds and Zulu timezone
@@ -121,13 +121,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     uid: "1.2.3." + Math.floor(Math.random() * 1000000),  // Generate dummy UID
                     number: 1,
                     modality: {
+                        // Simplified modality structure
                         code: modalityCode
                     },
                     numberOfInstances: 1
                 }]
             };
 
-            console.log("Submitting ImagingStudy:", imagingStudyData);
+            console.log("Submitting ImagingStudy:", JSON.stringify(imagingStudyData, null, 2));
             
             // Submit to backend
             const response = await fetch('https://back-end-santiago.onrender.com/imagingstudy', {
@@ -141,10 +142,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
+                console.error("Backend error details:", errorData);
                 throw new Error(errorData.detail || 'Failed to create Imaging Study');
             }
             
             const data = await response.json();
+            console.log("Success response:", data);
             
             showAlert('Success', 'Imaging Study created successfully', 'success');
             form.reset();
