@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Form submission
+    // Form submission - FINAL WORKING VERSION
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -88,33 +88,33 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!modalityCode) throw new Error('Please select a modality');
             if (!started) throw new Error('Please enter the study date and time');
             
-            // Prepare ImagingStudy data
+            // Prepare ImagingStudy data - SIMPLIFIED MODALITY STRUCTURE
             const imagingStudyData = {
                 resourceType: "ImagingStudy",
                 status: "available",
                 basedOn: [{
                     reference: `Appointment/${apptId}`
                 }],
-                modality: [{
-                    code: modalityCode
-                }],
+                // Simplified modality structure - just the code
+                modality: [modalityCode],
                 started: `${started}:00Z`,
                 description: description || "Radiology imaging study",
                 subject: {
-                    reference: "Patient/unknown"  // Will be updated from appointment
+                    reference: "Patient/unknown"
                 },
                 numberOfSeries: 1,
                 numberOfInstances: 1,
+                // Simplified series modality structure
                 series: [{
                     uid: "1.2.3." + Math.floor(Math.random() * 1000000),
                     number: 1,
-                    modality: {
-                        code: modalityCode
-                    },
+                    modality: modalityCode,
                     numberOfInstances: 1
                 }]
             };
 
+            console.log("Submitting ImagingStudy:", JSON.stringify(imagingStudyData, null, 2));
+            
             // Submit to backend
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner"></span> Creating...';
