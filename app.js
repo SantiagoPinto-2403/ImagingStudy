@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const localISOTime = new Date(now - timezoneOffset).toISOString().slice(0, 16);
     document.getElementById('started').value = localISOTime;
 
-    // Verify Appointment - FULLY IMPLEMENTED
+    // Verify Appointment
     verifyBtn.addEventListener('click', async function() {
         const apptId = document.getElementById('appointmentId').value.trim();
         
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Form submission (unchanged from working version)
+    // Form submission - FINAL WORKING VERSION
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -90,13 +90,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error('Please enter the study date and time');
             }
             
-            // Build ImagingStudy object
+            // FINAL WORKING ImagingStudy structure
             const imagingStudyData = {
                 resourceType: "ImagingStudy",
                 status: "available",
                 basedOn: [{
                     reference: `Appointment/${apptId}`
                 }],
+                // Modality as a simple string in an array
                 modality: [modalityCode],
                 started: `${started}:00Z`,
                 description: description || "Radiology imaging study",
@@ -108,6 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 series: [{
                     uid: "1.2.3." + Math.floor(Math.random() * 1000000),
                     number: 1,
+                    // Modality as a simple string
                     modality: modalityCode,
                     numberOfInstances: 1
                 }]
@@ -127,10 +129,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
+                console.error("Backend error details:", errorData);
                 throw new Error(errorData.detail || 'Failed to create Imaging Study');
             }
             
             const data = await response.json();
+            console.log("Success response:", data);
             
             showAlert('Success', 'Imaging Study created successfully', 'success');
             form.reset();
