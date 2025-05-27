@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('imagingStudyForm');
     const verifyBtn = document.getElementById('verifyAppointmentBtn');
     const submitBtn = document.getElementById('submitBtn');
+    const appointmentIdInput = document.getElementById('appointmentId');
+    const appointmentInfoDiv = document.getElementById('appointmentInfo');
     
     // Set default datetime to now with proper format
     const now = new Date();
@@ -9,60 +11,103 @@ document.addEventListener('DOMContentLoaded', function() {
     const localISOTime = new Date(now - timezoneOffset).toISOString().slice(0, 16);
     document.getElementById('started').value = localISOTime;
 
-    // Verify Appointment (unchanged working version)
+    // Verify Appointment - WORKING VERSION
     verifyBtn.addEventListener('click', async function() {
-        // ... (keep existing verification code)
+        const apptId = appointmentIdInput.value.trim();
+        
+        if (!apptId) {
+            showAlert('Error', 'Please enter the appointment ID', 'error');
+            return;
+        }
+        
+        try {
+            // Show loading state
+            verifyBtn.disabled = true;
+            verifyBtn.innerHTML = '<span class="spinner"></span> Verifying...';
+            appointmentInfoDiv.textContent = 'Verifying appointment...';
+            
+            // Call backend API
+            const response = await fetch(`https://back-end-santiago.onrender.com/appointment/${apptId}`);
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || 'Failed to verify appointment');
+            }
+            
+            const appointmentData = await response.json();
+            
+            // Validate response
+            if (!appointmentData || appointmentData.resourceType !== 'Appointment') {
+                throw new Error('Invalid appointment data received');
+            }
+            
+            // Extract patient information
+            const patientParticipant = appointmentData.participant?.find(
+                p => p.actor?.reference?.startsWith('Patient/')
+            );
+            const patientRef = patientParticipant?.actor?.reference || 'Patient/unknown';
+            const patientId = patientRef.split('/')[1] || 'Unknown';
+            
+            // Display appointment information
+            appointmentInfoDiv.innerHTML = `
+                <strong>Verified Appointment</strong><br>
+                Patient ID: ${patientId}<br>
+                Status: ${appointmentData.status || 'unknown'}<br>
+                Date: ${appointmentData.start ? new Date(appointmentData.start).toLocaleString() : 'Not specified'}
+            `;
+            
+        } catch (error) {
+            console.error('Verification failed:', error);
+            appointmentInfoDiv.textContent = '';
+            showAlert('Verification Failed', error.message, 'error');
+        } finally {
+            verifyBtn.disabled = false;
+            verifyBtn.textContent = 'Verify';
+        }
     });
 
-    // Form submission - FINAL CORRECTED VERSION
+    // Form submission
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
         try {
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner"></span> Processing...';
-            
-            // Verify appointment was checked
-            if (!document.getElementById('appointmentInfo').textContent) {
+            // Validate appointment was verified
+            if (!appointmentInfoDiv.textContent || 
+                appointmentInfoDiv.textContent.includes('Verifying') ||
+                appointmentInfoDiv.textContent.includes('Failed')) {
                 throw new Error('Please verify the appointment first');
             }
             
             // Get form values
-            const apptId = document.getElementById('appointmentId').value.trim();
+            const apptId = appointmentIdInput.value.trim();
             const modalityCode = document.getElementById('modality').value;
             const started = document.getElementById('started').value;
             const description = document.getElementById('description').value.trim();
             
-            if (!modalityCode) {
-                throw new Error('Please select a modality');
-            }
+            // Validate inputs
+            if (!modalityCode) throw new Error('Please select a modality');
+            if (!started) throw new Error('Please enter the study date and time');
             
-            if (!started) {
-                throw new Error('Please enter the study date and time');
-            }
-            
-            // FINAL WORKING ImagingStudy structure
+            // Prepare ImagingStudy data
             const imagingStudyData = {
                 resourceType: "ImagingStudy",
                 status: "available",
                 basedOn: [{
                     reference: `Appointment/${apptId}`
                 }],
-                // Modality as a simple CODING object
                 modality: [{
                     code: modalityCode
                 }],
                 started: `${started}:00Z`,
                 description: description || "Radiology imaging study",
                 subject: {
-                    reference: "Patient/unknown"
+                    reference: "Patient/unknown"  // Will be updated from appointment
                 },
                 numberOfSeries: 1,
                 numberOfInstances: 1,
                 series: [{
                     uid: "1.2.3." + Math.floor(Math.random() * 1000000),
                     number: 1,
-                    // Modality as a simple CODING object
                     modality: {
                         code: modalityCode
                     },
@@ -70,9 +115,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }]
             };
 
-            console.log("Submitting ImagingStudy:", JSON.stringify(imagingStudyData, null, 2));
-            
             // Submit to backend
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span> Creating...';
+            
             const response = await fetch('https://back-end-santiago.onrender.com/imagingstudy', {
                 method: 'POST',
                 headers: { 
@@ -84,20 +130,19 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                console.error("Backend error details:", errorData);
-                throw new Error(errorData.detail || 'Failed to create Imaging Study');
+                throw new Error(errorData.detail || 'Failed to create imaging study');
             }
             
-            const data = await response.json();
-            console.log("Success response:", data);
+            const result = await response.json();
+            showAlert('Success', 'Imaging study created successfully!', 'success');
             
-            showAlert('Success', 'Imaging Study created successfully', 'success');
+            // Reset form
             form.reset();
-            document.getElementById('appointmentInfo').textContent = '';
+            appointmentInfoDiv.textContent = '';
             document.getElementById('started').value = localISOTime;
             
         } catch (error) {
-            console.error("Error:", error);
+            console.error('Submission failed:', error);
             showAlert('Error', error.message, 'error');
         } finally {
             submitBtn.disabled = false;
