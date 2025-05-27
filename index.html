@@ -19,7 +19,7 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 500px;
+            max-width: 600px;
         }
         h1 {
             text-align: center;
@@ -31,38 +31,55 @@
             padding: 15px;
             border: 1px solid #ddd;
             border-radius: 5px;
+            background-color: #f9f9f9;
         }
         .section-title {
             font-weight: bold;
             margin-bottom: 10px;
-            color: #444;
+            color: #2c3e50;
+            font-size: 1.1em;
         }
         label {
             display: block;
             margin-top: 15px;
             font-weight: bold;
+            color: #34495e;
         }
         input, select {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             margin-top: 5px;
-            border: 1px solid #ccc;
+            border: 1px solid #ddd;
             border-radius: 5px;
             box-sizing: border-box;
+            font-size: 14px;
         }
         button {
             width: 100%;
             padding: 12px;
             margin-top: 20px;
-            background-color: #4a6baf;
+            background-color: #3498db;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
+            transition: background-color 0.3s;
         }
         button:hover {
-            background-color: #3a5a9f;
+            background-color: #2980b9;
+        }
+        .error {
+            color: #e74c3c;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .success {
+            color: #27ae60;
+            font-size: 1em;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -70,6 +87,13 @@
     <div class="container">
         <h1>Registro de Estudio de Imagenología</h1>
         <form id="imagingStudyForm">
+            <div class="section">
+                <div class="section-title">Relación con Cita</div>
+                <label for="appointmentReference">Referencia de Cita (Appointment ID):</label>
+                <input type="text" id="appointmentReference" placeholder="Appointment/507f1f77bcf86cd799439011" required>
+                <div id="appointmentError" class="error"></div>
+            </div>
+
             <div class="section">
                 <div class="section-title">Información Básica</div>
                 <label for="identifierSystem">Sistema de Identificación:</label>
@@ -87,19 +111,20 @@
 
                 <label for="subjectReference">Paciente (Referencia):</label>
                 <input type="text" id="subjectReference" placeholder="Patient/123" required>
-
-                <label for="studyDate">Fecha del Estudio:</label>
-                <input type="date" id="studyDate" required>
             </div>
 
             <div class="section">
-                <div class="section-title">Modalidad Principal</div>
+                <div class="section-title">Detalles del Estudio</div>
+                <label for="studyDate">Fecha del Estudio:</label>
+                <input type="datetime-local" id="studyDate" required>
+
                 <label for="modality">Modalidad:</label>
                 <select id="modality" required>
                     <option value="CT">Tomografía Computarizada (CT)</option>
                     <option value="MR">Resonancia Magnética (MR)</option>
                     <option value="US">Ultrasonido (US)</option>
                     <option value="XR">Radiografía (XR)</option>
+                    <option value="PT">Tomografía por Emisión de Positrones (PT)</option>
                 </select>
             </div>
 
@@ -108,13 +133,14 @@
                 <label for="seriesUid">UID de la Serie:</label>
                 <input type="text" id="seriesUid" placeholder="2.16.124.113543.6003.1154777499.30246.19789.3503430045.1" required>
 
-                <label for="instanceUid">UID de la Instancia:</label>
-                <input type="text" id="instanceUid" placeholder="2.16.124.113543.6003.1154777499.30246.19789.3503430045.1.1" required>
+                <label for="numberOfInstances">Número de Instancias:</label>
+                <input type="number" id="numberOfInstances" min="1" value="1" required>
 
-                <label for="sopClassCode">Código SOP Class:</label>
-                <input type="text" id="sopClassCode" value="urn:oid:1.2.840.10008.5.1.4.1.1.2" required>
+                <label for="bodySite">Sitio del Cuerpo (SNOMED CT):</label>
+                <input type="text" id="bodySite" placeholder="code|display (ej: 45048000|Chest)">
             </div>
 
+            <div id="formStatus" class="success"></div>
             <button type="submit">Registrar Estudio</button>
         </form>
     </div>

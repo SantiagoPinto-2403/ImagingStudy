@@ -1,7 +1,11 @@
-document.getElementById('imagingStudyForm').addEventListener('submit', function(event) {
+document.getElementById('imagingStudyForm').addEventListener('submit', async function(event) {
     event.preventDefault();
+    const formStatus = document.getElementById('formStatus');
+    formStatus.textContent = '';
+    formStatus.className = 'success';
 
     // Get form values
+    const appointmentReference = document.getElementById('appointmentReference').value;
     const identifierSystem = document.getElementById('identifierSystem').value;
     const identifierValue = document.getElementById('identifierValue').value;
     const status = document.getElementById('status').value;
@@ -9,10 +13,17 @@ document.getElementById('imagingStudyForm').addEventListener('submit', function(
     const subjectReference = document.getElementById('subjectReference').value;
     const studyDate = document.getElementById('studyDate').value;
     const seriesUid = document.getElementById('seriesUid').value;
-    const instanceUid = document.getElementById('instanceUid').value;
-    const sopClassCode = document.getElementById('sopClassCode').value;
+    const numberOfInstances = document.getElementById('numberOfInstances').value;
+    const bodySite = document.getElementById('bodySite').value;
 
-    // Create ImagingStudy object with series and instance
+    // Validate appointment reference format
+    if (!appointmentReference.startsWith('Appointment/')) {
+        document.getElementById('appointmentError').textContent = 
+            'La referencia debe comenzar con "Appointment/"';
+        return;
+    }
+
+    // Create ImagingStudy object
     const imagingStudy = {
         resourceType: "ImagingStudy",
         identifier: [{
@@ -20,51 +31,60 @@ document.getElementById('imagingStudyForm').addEventListener('submit', function(
             value: identifierValue
         }],
         status: status,
+        basedOn: [{
+            reference: appointmentReference,
+            type: "Appointment"
+        }],
         modality: [{
             coding: [{
                 system: "http://dicom.nema.org/resources/ontology/DCM",
-                code: modality
+                code: modality,
+                display: document.querySelector(`#modality option[value="${modality}"]`).text
             }]
         }],
         subject: {
             reference: subjectReference
         },
-        started: studyDate, // Just the date without time
+        started: studyDate,
         series: [{
             uid: seriesUid,
+            number: 1,
             modality: {
                 coding: [{
                     system: "http://dicom.nema.org/resources/ontology/DCM",
                     code: modality
                 }]
             },
-            instance: [{
-                uid: instanceUid,
-                sopClass: {
-                    system: "urn:ietf:rfc:3986",
-                    code: sopClassCode
-                }
-            }]
+            numberOfInstances: parseInt(numberOfInstances)
         }]
     };
 
-    // Send to server
-    console.log("Sending ImagingStudy:", imagingStudy);
-    
-    fetch('https://back-end-santiago.onrender.com/imagingstudy', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(imagingStudy)
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Success:', data);
-        alert('Estudio de imagen registrado exitosamente!');
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-        alert('Error al registrar el estudio de imagen.');
-    });
-});
+    // Add bodySite if provided
+    if (bodySite) {
+        const [code, display] = bodySite.split('|');
+        imagingStudy.series[0].bodySite = {
+            coding: [{
+                system: "http://snomed.info/sct",
+                code: code.trim(),
+                display: display?.trim() || ''
+            }]
+        };
+    }
+
+    try {
+        const response = await fetch('https://back-end-santiago.onrender.com/api/imaging-studies', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(imagingStudy)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || 'Error en el servidor');
+        }
+
+        console.log('Success:', data
