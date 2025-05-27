@@ -88,14 +88,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!modalityCode) throw new Error('Please select a modality');
             if (!started) throw new Error('Please enter the study date and time');
             
-            // Prepare ImagingStudy data - SIMPLIFIED MODALITY STRUCTURE
+            // Prepare ImagingStudy data - CORRECT MODALITY STRUCTURE
             const imagingStudyData = {
                 resourceType: "ImagingStudy",
                 status: "available",
                 basedOn: [{
                     reference: `Appointment/${apptId}`
                 }],
-                // Simplified modality structure - just the code
+                // Correct modality structure - simple string in array
                 modality: [modalityCode],
                 started: `${started}:00Z`,
                 description: description || "Radiology imaging study",
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 numberOfSeries: 1,
                 numberOfInstances: 1,
-                // Simplified series modality structure
+                // Correct series modality structure - simple string
                 series: [{
                     uid: "1.2.3." + Math.floor(Math.random() * 1000000),
                     number: 1,
