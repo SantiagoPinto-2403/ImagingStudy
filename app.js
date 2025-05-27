@@ -61,51 +61,59 @@ document.addEventListener('DOMContentLoaded', function() {
     // Form submission
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
-        
+    
         try {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner"></span> Procesando...';
-            
-            // Verify appointment was checked
+        
+        // Verify appointment was checked
             if (!document.getElementById('appointmentInfo').textContent) {
                 throw new Error('Por favor verifique la cita primero');
             }
-            
-            // Get form values
+        
+        // Get form values
             const apptId = document.getElementById('appointmentId').value.trim();
             const modality = document.getElementById('modality').value;
             const started = document.getElementById('started').value;
             const description = document.getElementById('description').value.trim();
-            
+        
             if (!modality) {
                 throw new Error('Por favor seleccione una modalidad');
             }
-            
+        
             if (!started) {
                 throw new Error('Por favor ingrese la fecha y hora del estudio');
             }
-            
-            // Build ImagingStudy object
+        
+        // Build properly formatted ImagingStudy object
             const imagingStudyData = {
                 resourceType: "ImagingStudy",
-                status: "registered",
+                status: "available",  // Changed from 'registered' to valid FHIR status
                 basedOn: [{
                     reference: `Appointment/${apptId}`
                 }],
-                modality: [
-                    {
-                        system: "http://dicom.nema.org/resources/ontology/DCM",
-                        code: modality
-                    }
-                ],
-                started: started,
+                modality: [{
+                    system: "http://dicom.nema.org/resources/ontology/DCM",
+                    code: modality
+                }],
+                started: `${started}:00Z`,  // Add seconds and Zulu timezone
                 description: description || "Estudio de imagen radiológico",
                 subject: {
-                    reference: "Patient/unknown" // Will be updated from appointment
-                }
+                    reference: "Patient/unknown"  // Will be updated from appointment
+                },
+                numberOfSeries: 1,  // Required field
+                numberOfInstances: 1,  // Required field
+                series: [{  // Required field with minimal data
+                    uid: "1.2.3.4",  // Dummy UID
+                    number: 1,
+                    modality: {
+                        code: modality
+                    },
+                    numberOfInstances: 1
+                }]
             };
-            
-            // Submit to backend
+        
+        // Submit to backend
             const response = await fetch('https://back-end-santiago.onrender.com/imagingstudy', {
                 method: 'POST',
                 headers: { 
@@ -114,18 +122,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify(imagingStudyData)
             });
-            
+        
             const data = await response.json();
-            
+        
             if (!response.ok) {
                 throw new Error(data.detail || 'Error al registrar el estudio');
             }
-            
+        
             showAlert('Éxito', 'Estudio registrado correctamente', 'success');
             form.reset();
             document.getElementById('appointmentInfo').textContent = '';
             document.getElementById('started').value = localISOTime;
-            
+        
         } catch (error) {
             showAlert('Error', error.message, 'error');
         } finally {
