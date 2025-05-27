@@ -3,184 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrar Estudio de Imagen</title>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Registro de Estudio de Imagenología</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f7fa;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            min-height: 100vh;
+            height: 100vh;
             margin: 0;
-            padding: 20px;
-            color: #333;
+            padding-top: 20px;
+            padding-right: 20px;
         }
-        
         .container {
             background: white;
-            padding: 30px;
+            padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 500px;
+            max-width: 400px;
             margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        
         h1 {
             text-align: center;
-            color: #2c3e50;
-            margin-bottom: 25px;
-            font-weight: 600;
+            color: #333;
         }
-        
-        .form-group {
-            margin-bottom: 20px;
+        form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        
         label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: #2c3e50;
+            font-weight: bold;
+            align-self: flex-start;
+            margin-top: 10px;
         }
-        
-        .required-field::after {
-            content: " *";
-            color: #e74c3c;
+        input, select {
+            width: 90%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
         }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        
-        textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-        
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-        }
-        
         button {
-            width: 100%;
-            padding: 12px;
-            background-color: #3498db;
+            width: 90%;
+            padding: 10px;
+            background-color: #a6a6ed;
             color: white;
             border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 500;
+            border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s;
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            margin-top: 15px;
         }
-        
         button:hover {
-            background-color: #2980b9;
-        }
-        
-        button:disabled {
-            background-color: #95a5a6;
-            cursor: not-allowed;
-        }
-        
-        .search-container {
-            display: flex;
-            gap: 10px;
-            margin-top: 5px;
-        }
-        
-        .search-container input {
-            flex: 1;
-        }
-        
-        .search-container button {
-            width: auto;
-            padding: 10px 15px;
-            margin-top: 0;
-        }
-        
-        .info-display {
-            padding: 10px;
-            background-color: #f0f8ff;
-            border-radius: 6px;
-            margin-top: 10px;
-            font-size: 14px;
-        }
-        
-        .spinner {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+            background-color: #8585d6;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Registrar Estudio de Imagen</h1>
+        <h1>Registro de Estudio de Imagenología</h1>
         <form id="imagingStudyForm">
-            <!-- Appointment Reference -->
-            <div class="form-group">
-                <label for="appointmentId" class="required-field">Cita Relacionada</label>
-                <div class="search-container">
-                    <input type="text" id="appointmentId" placeholder="AP-12345" required>
-                    <button type="button" id="verifyAppointmentBtn">Verificar</button>
-                </div>
-                <div id="appointmentInfo" class="info-display"></div>
-            </div>
-            
-            <!-- Study Details -->
-            <div class="form-group">
-                <label for="modality" class="required-field">Modalidad</label>
-                <select id="modality" required>
-                    <option value="">Seleccione...</option>
-                    <option value="DX">Radiografía Digital (DX)</option>
-                    <option value="CT">Tomografía Computarizada (CT)</option>
-                    <option value="MR">Resonancia Magnética (MR)</option>
-                    <option value="US">Ultrasonido (US)</option>
-                    <option value="MG">Mamografía (MG)</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="started" class="required-field">Fecha y Hora del Estudio</label>
-                <input type="datetime-local" id="started" required>
-            </div>
-            
-            <!-- Additional Information -->
-            <div class="form-group">
-                <label for="description">Descripción</label>
-                <textarea id="description" placeholder="Hallazgos relevantes, observaciones técnicas, etc."></textarea>
-            </div>
-            
-            <button type="submit" id="submitBtn">
-                <span class="button-text">Registrar Estudio</span>
-            </button>
+            <label for="identifierSystem">Sistema de Identificación:</label>
+            <input type="text" id="identifierSystem" value="urn:dicom:uid" required>
+
+            <label for="identifierValue">UID del Estudio:</label>
+            <input type="text" id="identifierValue" placeholder="urn:oid:2.16.124.113543.6003.1154777499.30246.19789.3503430045" required>
+
+            <label for="status">Estado del Estudio:</label>
+            <select id="status" required>
+                <option value="available" selected>Disponible</option>
+                <option value="registered">Registrado</option>
+                <option value="cancelled">Cancelado</option>
+            </select>
+
+            <label for="subjectReference">Paciente (Referencia):</label>
+            <input type="text" id="subjectReference" placeholder="Patient/123" required>
+
+            <label for="studyDate">Fecha del Estudio:</label>
+            <input type="date" id="studyDate" required>
+
+            <label for="modality">Modalidad:</label>
+            <select id="modality" required>
+                <option value="CT">Tomografía Computarizada (CT)</option>
+                <option value="MR">Resonancia Magnética (MR)</option>
+                <option value="US">Ultrasonido (US)</option>
+                <option value="XR">Radiografía (XR)</option>
+            </select>
+
+            <label for="seriesUid">UID de la Serie:</label>
+            <input type="text" id="seriesUid" placeholder="2.16.124.113543.6003.1154777499.30246.19789.3503430045.1" required>
+
+            <label for="instanceUid">UID de la Instancia:</label>
+            <input type="text" id="instanceUid" placeholder="2.16.124.113543.6003.1154777499.30246.19789.3503430045.1.1" required>
+
+            <label for="sopClassCode">Código SOP Class:</label>
+            <input type="text" id="sopClassCode" value="urn:oid:1.2.840.10008.5.1.4.1.1.2" required>
+
+            <button type="submit">Registrar Estudio</button>
         </form>
     </div>
-    
-    <script src="app.js"> </script>
+    <script src="app.js"></script>
 </body>
 </html>
