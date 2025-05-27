@@ -9,12 +9,61 @@ document.addEventListener('DOMContentLoaded', function() {
     const localISOTime = new Date(now - timezoneOffset).toISOString().slice(0, 16);
     document.getElementById('started').value = localISOTime;
 
-    // Verify Appointment (unchanged from previous version)
+    // Verify Appointment - FULLY IMPLEMENTED
     verifyBtn.addEventListener('click', async function() {
-        // ... (keep your existing verification code)
+        const apptId = document.getElementById('appointmentId').value.trim();
+        
+        if (!apptId) {
+            showAlert('Error', 'Please enter the appointment ID', 'error');
+            return;
+        }
+        
+        try {
+            verifyBtn.disabled = true;
+            verifyBtn.innerHTML = '<span class="spinner"></span> Verifying...';
+            
+            const response = await fetch(`https://back-end-santiago.onrender.com/appointment/${apptId}`);
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || 'Appointment not found');
+            }
+            
+            const data = await response.json();
+            
+            // Check if the response contains valid appointment data
+            if (!data || !data.resourceType || data.resourceType !== 'Appointment') {
+                throw new Error('Invalid server response');
+            }
+            
+            // Display appointment info
+            const patientRef = data.participant?.find(p => 
+                p.actor?.reference?.startsWith('Patient/')
+            )?.actor?.reference || 'Patient/unknown';
+            
+            const patientId = patientRef.split('/')[1] || 'Unknown';
+            const modality = data.appointmentType?.text || 'Not specified';
+            const status = data.status || 'Unknown';
+            const date = data.start ? new Date(data.start).toLocaleString() : 'Not specified';
+            
+            document.getElementById('appointmentInfo').innerHTML = `
+                <strong>Valid Appointment</strong><br>
+                Patient ID: ${patientId}<br>
+                Modality: ${modality}<br>
+                Status: ${status}<br>
+                Date: ${date}
+            `;
+            
+        } catch (error) {
+            showAlert('Error', error.message, 'error');
+            document.getElementById('appointmentInfo').textContent = '';
+        } finally {
+            verifyBtn.disabled = false;
+            verifyBtn.textContent = 'Verify';
+        }
     });
 
-    // Form submission - FINAL WORKING VERSION
+    // Form submission (unchanged from working version)
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -41,15 +90,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error('Please enter the study date and time');
             }
             
-            // FINAL WORKING ImagingStudy structure
+            // Build ImagingStudy object
             const imagingStudyData = {
                 resourceType: "ImagingStudy",
                 status: "available",
                 basedOn: [{
                     reference: `Appointment/${apptId}`
                 }],
-                // Minimal modality array - just the code string
-                modality: [modalityCode],  // CHANGED THIS LINE
+                modality: [modalityCode],
                 started: `${started}:00Z`,
                 description: description || "Radiology imaging study",
                 subject: {
@@ -60,8 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 series: [{
                     uid: "1.2.3." + Math.floor(Math.random() * 1000000),
                     number: 1,
-                    // Minimal modality reference in series
-                    modality: modalityCode,  // CHANGED THIS LINE
+                    modality: modalityCode,
                     numberOfInstances: 1
                 }]
             };
@@ -80,12 +127,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                console.error("Backend error details:", errorData);
                 throw new Error(errorData.detail || 'Failed to create Imaging Study');
             }
             
             const data = await response.json();
-            console.log("Success response:", data);
             
             showAlert('Success', 'Imaging Study created successfully', 'success');
             form.reset();
