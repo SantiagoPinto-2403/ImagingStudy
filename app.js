@@ -3,10 +3,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const verifyBtn = document.getElementById('verifyAppointmentBtn');
     const submitBtn = document.getElementById('submitBtn');
     
-    // Set default datetime to now
+    // Set default datetime to now with proper format
     const now = new Date();
     const timezoneOffset = now.getTimezoneOffset() * 60000;
-    const localISOTime = (new Date(now - timezoneOffset)).toISOString().slice(0, 16);
+    const localISOTime = new Date(now - timezoneOffset).toISOString().slice(0, 16);
     document.getElementById('started').value = localISOTime;
 
     // Verify Appointment
@@ -14,39 +14,53 @@ document.addEventListener('DOMContentLoaded', function() {
         const apptId = document.getElementById('appointmentId').value.trim();
         
         if (!apptId) {
-            showAlert('Error', 'Por favor ingrese el ID de la cita', 'error');
+            showAlert('Error', 'Please enter the appointment ID', 'error');
             return;
         }
         
         try {
             verifyBtn.disabled = true;
-            verifyBtn.innerHTML = '<span class="spinner"></span> Verificando...';
+            verifyBtn.innerHTML = '<span class="spinner"></span> Verifying...';
             
             const response = await fetch(`https://back-end-santiago.onrender.com/appointment/${apptId}`);
-            const data = await response.json();
             
             if (!response.ok) {
-                throw new Error(data.detail || 'No se encontró la cita');
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || 'Appointment not found');
+            }
+            
+            const data = await response.json();
+            
+            // Check if the response contains valid appointment data
+            if (!data || !data.resourceType || data.resourceType !== 'Appointment') {
+                throw new Error('Invalid server response');
             }
             
             // Display appointment info
-            const patientRef = data.participant?.find(p => p.actor?.reference?.startsWith('Patient/'));
-            const patientId = patientRef ? patientRef.actor.reference.split('/')[1] : 'Desconocido';
+            const patientRef = data.participant?.find(p => 
+                p.actor?.reference?.startsWith('Patient/')
+            )?.actor?.reference || 'Patient/unknown';
             
-            const modality = data.appointmentType?.text || 'No especificada';
+            const patientId = patientRef.split('/')[1] || 'Unknown';
+            const modality = data.appointmentType?.text || 'Not specified';
+            
             const statusMap = {
-                'booked': 'Agendada',
-                'arrived': 'Paciente presente',
-                'fulfilled': 'Completada',
-                'cancelled': 'Cancelada'
+                'booked': 'Scheduled',
+                'arrived': 'Patient present',
+                'fulfilled': 'Completed',
+                'cancelled': 'Cancelled',
+                'noshow': 'No show'
             };
-            const status = statusMap[data.status] || data.status || 'Desconocido';
+            
+            const status = statusMap[data.status] || data.status || 'Unknown';
+            const date = data.start ? new Date(data.start).toLocaleString() : 'Not specified';
             
             document.getElementById('appointmentInfo').innerHTML = `
-                <strong>Cita válida</strong><br>
-                ID Paciente: ${patientId}<br>
-                Modalidad: ${modality}<br>
-                Estado: ${status}
+                <strong>Valid Appointment</strong><br>
+                Patient ID: ${patientId}<br>
+                Modality: ${modality}<br>
+                Status: ${status}<br>
+                Date: ${date}
             `;
             
         } catch (error) {
@@ -54,66 +68,68 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('appointmentInfo').textContent = '';
         } finally {
             verifyBtn.disabled = false;
-            verifyBtn.textContent = 'Verificar';
+            verifyBtn.textContent = 'Verify';
         }
     });
 
     // Form submission
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
-    
+        
         try {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner"></span> Procesando...';
-        
-        // Verify appointment was checked
+            submitBtn.innerHTML = '<span class="spinner"></span> Processing...';
+            
+            // Verify appointment was checked
             if (!document.getElementById('appointmentInfo').textContent) {
-                throw new Error('Por favor verifique la cita primero');
+                throw new Error('Please verify the appointment first');
             }
-        
-        // Get form values
+            
+            // Get form values
             const apptId = document.getElementById('appointmentId').value.trim();
-            const modality = document.getElementById('modality').value;
+            const modalityCode = document.getElementById('modality').value;
             const started = document.getElementById('started').value;
             const description = document.getElementById('description').value.trim();
-        
-            if (!modality) {
-                throw new Error('Por favor seleccione una modalidad');
+            
+            if (!modalityCode) {
+                throw new Error('Please select a modality');
             }
-        
+            
             if (!started) {
-                throw new Error('Por favor ingrese la fecha y hora del estudio');
+                throw new Error('Please enter the study date and time');
             }
-        
-        // Build properly formatted ImagingStudy object
+            
+            // Build properly formatted ImagingStudy object
             const imagingStudyData = {
                 resourceType: "ImagingStudy",
-                status: "available",  // Changed from 'registered' to valid FHIR status
+                status: "available",
                 basedOn: [{
                     reference: `Appointment/${apptId}`
                 }],
                 modality: [{
                     system: "http://dicom.nema.org/resources/ontology/DCM",
-                    code: modality
+                    code: modalityCode
                 }],
                 started: `${started}:00Z`,  // Add seconds and Zulu timezone
-                description: description || "Estudio de imagen radiológico",
+                description: description || "Radiology imaging study",
                 subject: {
-                    reference: "Patient/unknown"  // Will be updated from appointment
+                    reference: "Patient/unknown"
                 },
-                numberOfSeries: 1,  // Required field
-                numberOfInstances: 1,  // Required field
-                series: [{  // Required field with minimal data
-                    uid: "1.2.3.4",  // Dummy UID
+                numberOfSeries: 1,
+                numberOfInstances: 1,
+                series: [{
+                    uid: "1.2.3." + Math.floor(Math.random() * 1000000),  // Generate dummy UID
                     number: 1,
                     modality: {
-                        code: modality
+                        code: modalityCode
                     },
                     numberOfInstances: 1
                 }]
             };
-        
-        // Submit to backend
+
+            console.log("Submitting ImagingStudy:", imagingStudyData);
+            
+            // Submit to backend
             const response = await fetch('https://back-end-santiago.onrender.com/imagingstudy', {
                 method: 'POST',
                 headers: { 
@@ -122,23 +138,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify(imagingStudyData)
             });
-        
-            const data = await response.json();
-        
+            
             if (!response.ok) {
-                throw new Error(data.detail || 'Error al registrar el estudio');
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || 'Failed to create Imaging Study');
             }
-        
-            showAlert('Éxito', 'Estudio registrado correctamente', 'success');
+            
+            const data = await response.json();
+            
+            showAlert('Success', 'Imaging Study created successfully', 'success');
             form.reset();
             document.getElementById('appointmentInfo').textContent = '';
             document.getElementById('started').value = localISOTime;
-        
+            
         } catch (error) {
+            console.error("Error:", error);
             showAlert('Error', error.message, 'error');
         } finally {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = '<span class="button-text">Registrar Estudio</span>';
+            submitBtn.innerHTML = '<span class="button-text">Create Imaging Study</span>';
         }
     });
     
